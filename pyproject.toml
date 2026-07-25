@@ -1,0 +1,12 @@
+[project]
+name = "teiknical"
+description = "Teiko Technical Exam"
+authors = [
+    {name = "Kevin Fox", email = "foxkevin@protonmail.com"},
+]
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pytest",
+]
+version = "0.0.1"
