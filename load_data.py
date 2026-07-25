@@ -1,6 +1,10 @@
-import database
+# Imports: Project
+# ----------------
+import analysis
 import csv_helper
+import database
 import schema
+
 
 def main():
     # part 0
@@ -12,9 +16,9 @@ def main():
     csv_helper.populate_cell_count_csv()
     # part 2
     ## frequency of each cell type in each sample
-    ## sample, total_count (sum of all cells), population, count, relative frequency (%)
     ## each row is one population from one sample
     database.create_table(schema.create_cell_relative_frequency_table)
+    analysis.populate_relative_frequency_table()
     # part 3
     # part 4
     pass
