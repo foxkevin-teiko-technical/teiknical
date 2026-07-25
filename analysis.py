@@ -1,6 +1,6 @@
 """analysis.py
 
-Module to perform required data analysis tasks
+Module to perform required data analysis and transformation tasks
 
 functions:
     - populate_relative_frequency_table
@@ -23,20 +23,20 @@ def populate_relative_frequency_table() -> None:
     For each sample in cell_count, calculates the total number of cells across all five populations. Then, computes the
     relative frequency of each population as a percentage of the total cell count for that sample. Each row represents
     one population from one sample.
-    
+
     Then updates the cell_relative_frequency_table. See schema.create_cell_relative_frequency_table for column & table
     info.
 
     Returns:
         None
     """
-    # connect to default database (app.db)
     with database.get_connection() as db_connection:
         cursor = db_connection.cursor()
 
         # select subset of columns from all rows in cell count: we want the sample ID and the population counts
         # the join statement outputs the POPULATIONS strings with a comma in between each
-        cursor.execute(f"SELECT sample, {", ".join(POPULATIONS)} FROM cell_count")
+        population_columns = ", ".join(POPULATIONS)  # "b_cell, cd8_t_cell, <...>"
+        cursor.execute(f"SELECT sample, {population_columns} FROM cell_count")
         rows = cursor.fetchall()
 
         # what needs to be calculated from the problem statement:
@@ -46,7 +46,7 @@ def populate_relative_frequency_table() -> None:
         # - count: cell count
         # - percentage: relative frequency in percentage
 
-        # initialize empty list that will be used to store the calculated values
+        # initialize empty list that will be used to store the calculated values for batch db entry
         calculated_relative_frequency_rows = []
 
         # iterate through each row from the cell_count table (each row is one sample)
@@ -56,9 +56,9 @@ def populate_relative_frequency_table() -> None:
 
             # now for each row (i.e. sample), we are going to generate len(POPULATIONS) [in this case: 5] new rows
             #  one row per population per sample - our cell_count csv has 10500 rows, so this will have 52,500 rows
-            for pop in POPULATIONS:
+            for population in POPULATIONS:
                 # get the cell count of the currently focused population - using same terminology as the prob statement
-                count = row[pop]
+                count = row[population]
                 # problem statement did not specify if these should be saved as XY.Z% or 0.XYZ: saving it as XY.Z%
                 #  for readability, but I would normally ask the requestor how they'd like it formatted
                 percentage = (count / total_count) * 100
@@ -67,15 +67,20 @@ def populate_relative_frequency_table() -> None:
                     (
                         row["sample"],
                         total_count,
-                        pop,
+                        population,
                         count,
                         percentage
                     )
                 )
 
         # update the cell_relative_frequency table with our newly calculated data
-        cursor.executemany("""
-                           INSERT INTO cell_relative_frequency(
-                           sample, total_count, population, count, percentage)
-                           VALUES(?, ?, ?, ?, ?)""",
-                           calculated_relative_frequency_rows)
+        cursor.executemany(
+            """
+            INSERT INTO cell_relative_frequency
+            (
+                sample, total_count, population, count, percentage
+            )
+            VALUES(?, ?, ?, ?, ?)
+            """,
+            calculated_relative_frequency_rows
+        )

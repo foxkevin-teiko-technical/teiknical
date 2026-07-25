@@ -1,3 +1,11 @@
+"""schema.py
+
+Module with table definitions and logic to create tables based on those definitions
+
+functions:
+    - create_cell_count_table
+    - create_cell_relative_frequency_table
+"""
 # Imports: Standard Lib
 # ---------------------
 import sqlite3
@@ -15,7 +23,8 @@ def create_cell_count_table(cursor: sqlite3.Cursor) -> None:
     """
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS cell_count (
+        CREATE TABLE IF NOT EXISTS cell_count
+        (
             project TEXT,
             subject TEXT,
             condition TEXT,
@@ -54,7 +63,8 @@ def create_cell_relative_frequency_table(cursor: sqlite3.Cursor) -> None:
     """
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS cell_relative_frequency (
+        CREATE TABLE IF NOT EXISTS cell_relative_frequency
+        (
             sample TEXT,
             total_count INTEGER,
             population TEXT,

@@ -1,3 +1,7 @@
+"""load_data.py
+
+Main module for the technical exam
+"""
 # Imports: Project
 # ----------------
 import analysis
@@ -21,7 +25,7 @@ def main():
     analysis.populate_relative_frequency_table()
     # part 3
     # part 4
-    pass
+
 
 if __name__ == "__main__":
     main()
