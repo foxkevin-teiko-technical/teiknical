@@ -4,13 +4,19 @@ Module to perform required data analysis and transformation tasks
 
 functions:
     - populate_relative_frequency_table
+    - query_melanoma_miraclib_baseline
 
 constants
     - POPULATIONS (tuple): tuple of strings with the names of cell populations e.g. "b_cell"
 """
 # Imports: Project
 # ----------------
+import csv_helper
 import database
+
+# Imports: Standard Lib
+# ---------------------
+from collections import Counter
 
 # Constants
 # ---------
@@ -84,3 +90,71 @@ def populate_relative_frequency_table() -> None:
             """,
             calculated_relative_frequency_rows
         )
+
+        # While it's in a db table already, for demonstration purposes, I will also output this as a csv
+        csv_helper.export_tuple_list_to_csv(
+            "output/part2_cell_relative_frequency.csv",
+            ["sample", "total_count", "population", "count", "percentage"],
+            calculated_relative_frequency_rows
+        )
+
+
+def query_melanoma_miraclib_baseline() -> None:
+    """Query all melanoma PBMC samples at baseline from patients who have been treated with miraclib
+
+    Also, within that subset, count how many samples were from each project,
+    how many subjects were responders/non-responders, and
+    how many subjects were males/females
+
+    Since this is a query, it does not create a new database table, but instead exports to csv for this exercise
+
+    Returns:
+        None
+    """
+    with database.get_connection() as db_connection:
+        cursor = db_connection.cursor()
+
+        # For the SELECT (column) criteria, excluded condition treatment sample_type and time_from_treatment_start as
+        #   we know these values since we're querying for them specifically. Included all other columns however as its
+        #   meant to be an exploratory query
+        cursor.execute(
+            """
+            SELECT
+                project, subject, age, sex, response, sample, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte
+            FROM cell_count
+            WHERE condition = 'melanoma'
+                AND treatment = 'miraclib'
+                AND sample_type = 'PBMC'
+                AND time_from_treatment_start = 0
+            """
+        )
+
+        rows = cursor.fetchall()
+
+        # save the initial query output to a csv
+        csv_helper.export_sqlite_rows_to_csv("output/part4_melanoma_miraclib_baseline.csv", rows)
+
+        # using Counter() to check frequencies of different projects, sexes, and responses
+        counter_dict = {
+            "project": Counter(),
+            "sex": Counter(),
+            "response": Counter()
+        }
+
+        for row in rows:
+            # could do this:
+            #   for counter_name, counter in counter_dict.items():
+            #       counter[row[counter_name]] += 1
+            # while it's cleaner than the below (I don't love the hardcoded strings), I believe it's more difficult to
+            #   understand what's happening
+            counter_dict["project"][row["project"]] += 1
+            counter_dict["sex"][row["sex"]] += 1
+            counter_dict["response"][row["response"]] += 1
+
+        # create one csv file for each: project, sex, and response. Could do a single csv file as a summary as well
+        for counter_name, counter in counter_dict.items():
+            csv_helper.export_counter_to_csv(
+                f"output/part4_{counter_name}.csv",
+                [counter_name, "count"],
+                counter
+            )
