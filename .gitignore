@@ -10,3 +10,6 @@ __pycache__/
 
 # database
 app.db
+
+# setuptools
+*.egg-info/
