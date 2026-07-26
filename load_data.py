@@ -28,6 +28,9 @@ def main():
     # part 4
     analysis.query_melanoma_miraclib_baseline()
 
+    # Uncomment to run the analysis for the "Question" section: answer is 10206.15
+    # print(analysis.calculate_average_b_cell_melanoma_males_baseline())
+
 
 if __name__ == "__main__":
     main()

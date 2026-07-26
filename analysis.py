@@ -3,6 +3,7 @@
 Module to perform required data analysis and transformation tasks
 
 functions:
+    - calculate_average_b_cell_melanoma_males_baseline
     - populate_relative_frequency_table
     - query_melanoma_miraclib_baseline
 
@@ -21,6 +22,33 @@ from collections import Counter
 # Constants
 # ---------
 POPULATIONS = ("b_cell", "cd8_t_cell", "cd4_t_cell", "nk_cell", "monocyte")  # column names from cell_count
+
+
+def calculate_average_b_cell_melanoma_males_baseline() -> float:
+    """Calculate average number of B cells for Male responders at time = 0
+
+    From the problem statement:
+    Considering Melanoma males of all sample and treatment types,
+    what is the average number of B cells for responders at time=0? Use two decimals (XXX.XX)
+
+    Returns:
+        float
+    """
+    with database.get_connection() as db_connection:
+        cursor = db_connection.cursor()
+
+        cursor.execute(
+            """
+            SELECT ROUND(AVG(b_cell), 2) AS average_b_cells
+            FROM cell_count
+            WHERE condition = 'melanoma'
+              AND sex = 'M'
+              AND response = 'yes'
+              AND time_from_treatment_start = 0
+            """
+        )
+
+        return cursor.fetchone()['average_b_cells']
 
 
 def populate_relative_frequency_table() -> None:
@@ -117,6 +145,8 @@ def query_melanoma_miraclib_baseline() -> None:
         # For the SELECT (column) criteria, excluded condition treatment sample_type and time_from_treatment_start as
         #   we know these values since we're querying for them specifically. Included all other columns however as its
         #   meant to be an exploratory query
+        # While I end up iterating and counting with python, it's also possible to do multiple SQL queries instead and
+        #   use SQL aggregation
         cursor.execute(
             """
             SELECT
