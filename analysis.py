@@ -117,6 +117,8 @@ def query_melanoma_miraclib_baseline() -> None:
         # For the SELECT (column) criteria, excluded condition treatment sample_type and time_from_treatment_start as
         #   we know these values since we're querying for them specifically. Included all other columns however as its
         #   meant to be an exploratory query
+        # While I end up iterating and counting with python, it's also possible to do multiple sql queries instead and
+        #   use sql aggregation
         cursor.execute(
             """
             SELECT
@@ -158,3 +160,30 @@ def query_melanoma_miraclib_baseline() -> None:
                 [counter_name, "count"],
                 counter
             )
+
+
+def answer_melanoma_question() -> float:
+    """Calculate average number of B cells for Male responders at time = 0
+
+    From the problem statement:
+    Considering Melanoma males of all sample and treatment types,
+    what is the average number of B cells for responders at time=0? Use two decimals (XXX.XX)
+
+    Returns:
+        float
+    """
+    with database.get_connection() as db_connection:
+        cursor = db_connection.cursor()
+
+        cursor.execute(
+            """
+            SELECT ROUND(AVG(b_cell), 2) AS average_b_cells
+            FROM cell_count
+            WHERE condition = 'melanoma'
+              AND sex = 'M'
+              AND response = 'yes'
+              AND time_from_treatment_start = 0
+            """
+        )
+
+        return cursor.fetchone()['average_b_cells']
