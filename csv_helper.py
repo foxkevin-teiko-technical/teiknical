@@ -4,8 +4,8 @@ Module for interfacing with the provided CSV file
 
 functions:
     - export_counter_to_csv
-    - export_tuple_list_to_csv
     - export_sqlite_rows_to_csv
+    - export_tuple_list_to_csv
     - populate_cell_count_csv
 """
 # Imports: Project
@@ -40,24 +40,6 @@ def export_counter_to_csv(csv_output_file: str, header_row: list[str], counter: 
             writer.writerow([key, count])
 
 
-def export_tuple_list_to_csv(csv_output_file: str, header_row: list[str], list_data: list[tuple]) -> None:
-    """Export a list of tuples to a csv file
-
-    Args:
-        csv_output_file (str): path to the output csv file
-        header_row (list[str]): list of strings with the header row values
-        list_data (list[tuple]): list of tuples with the row information
-
-    Returns:
-        None
-    """
-    with open(csv_output_file, "w", newline="") as csv_file:
-        writer = csv.writer(csv_file)
-        writer.writerow(header_row)
-
-        writer.writerows(list_data)
-
-
 def export_sqlite_rows_to_csv(csv_output_file: str, sqlite_rows: list[sqlite3.Row]) -> None:
     """Export a list of sqlite3 rows returned from cursor.fetchall() to a csv file
 
@@ -74,6 +56,24 @@ def export_sqlite_rows_to_csv(csv_output_file: str, sqlite_rows: list[sqlite3.Ro
 
         for row in sqlite_rows:
             writer.writerow(dict(row))
+
+
+def export_tuple_list_to_csv(csv_output_file: str, header_row: list[str], list_data: list[tuple]) -> None:
+    """Export a list of tuples to a csv file
+
+    Args:
+        csv_output_file (str): path to the output csv file
+        header_row (list[str]): list of strings with the header row values
+        list_data (list[tuple]): list of tuples with the row information
+
+    Returns:
+        None
+    """
+    with open(csv_output_file, "w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(header_row)
+
+        writer.writerows(list_data)
 
 
 def populate_cell_count_csv(csv_data_file: str = "cell-count.csv") -> None:
